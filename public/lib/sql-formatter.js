@@ -1,15 +1,15 @@
 define(function(require){
   var
-    utils = require('./utils')
+    http = require('reqwest')
   , config = require('../config')
   , sqlFormatter = {}
   ;
 
   sqlFormatter.format = function(str, callback){
-    utils.http({
+    http({
       url: config.sqlFormatterUrl
     , method: 'get'
-    , type: 'json'
+    , type: 'jsonp'
 
     , data: {
         sql: str
