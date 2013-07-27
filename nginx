@@ -1,0 +1,16 @@
+ server {
+  server_name mosql.j0.hn;
+  listen 80;
+
+  root /apps/mosql-tool/public;
+  index index.html index.htm;
+
+  location ~ ^/(.*\..*)$ {
+    alias /apps/mosql-tool/public/$1;
+  }
+
+  location ~ ^/(.+)$ {
+    # root /apps/mosql-tool/public;
+    proxy_pass http://127.0.0.1:3006;
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "mongo-sql-tool",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app"
+  },
+  "dependencies": {
+    "express": "3.0.6"
+  },
+  "jam": {
+    "packageDir": "public/jam",
+    "baseUrl": "public",
+    "dependencies": {
+      "domReady": "2.0.x",
+      "mongo-sql": "2.1.x",
+      "ace": "1.0.x",
+      "reqwest": "0.8.x"
+    }
+  }
+}
