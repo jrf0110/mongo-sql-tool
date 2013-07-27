@@ -40,7 +40,15 @@ define(function(require){
             'command-enter': app.parseResult
           });
 
+          app.resultEditor.commands.bindKeys({
+            'command-enter': app.parseResult
+          });
+
           app.mainEditor.commands.bindKeys({
+            'command-alt-f': app.formatResult
+          });
+
+          app.resultEditor.commands.bindKeys({
             'command-alt-f': app.formatResult
           });
 
@@ -72,7 +80,7 @@ define(function(require){
       }
 
     , formatResult: function(){
-        utils.formatSql( app.mainEditor.getValue(), function(error, result){
+        utils.formatSql( app.resultEditor.getValue(), function(error, result){
           if (error) return app.error( error );
 
           app.resultEditor.setValue( result );
