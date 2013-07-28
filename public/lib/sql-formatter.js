@@ -6,9 +6,14 @@ define(function(require){
   ;
 
   sqlFormatter.format = function(str, callback){
+    // Stupid stupidness to fix create table
+    if (str.indexOf('create table') > -1){
+      return callback(null, str.substring(0, str.indexOf('(') + 1) + '\n  ' + str.substring(str.indexOf('(') + 1, str.length - 1).split(', ').join(',\n  ') + '\n' + ')');
+    }
+
     http({
       url: config.sqlFormatterUrl
-    , method: 'get'
+    , method: 'post'
     , type: 'jsonp'
 
     , data: {
