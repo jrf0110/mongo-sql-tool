@@ -12,6 +12,7 @@ define(function(require){
   var
     ace           = require('ace')
   , utils         = require('./lib/utils')
+  , initial       = require('./lib/initial')
   , config        = require('./config')
   , cssParser     = require('./lib/css-parser')
 
@@ -52,8 +53,14 @@ define(function(require){
             'command-alt-f': app.formatResult
           });
 
+          app.loadInitial();
+
           app.initEvents();
         });
+      }
+
+    , loadInitial: function(){
+        app.mainEditor.setValue( initial );
       }
 
     , initEvents: function(){
