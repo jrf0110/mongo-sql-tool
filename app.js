@@ -33,27 +33,27 @@ app.configure('development', function(){
   app.use(express.static(path.join(__dirname, 'public')));
 });
 
-app.get( '/snippets'
+app.get( '/api/snippets'
 , dm.pagination( 30 )
 , dm.sort( '-id' )
 , dm.find( db.snippets )
 );
 
-app.post( '/snippets'
+app.post( '/api/snippets'
 , dm.insert( db.snippets )
 );
 
-app.get( '/snippets/:snippetId'
+app.get( '/api/snippets/:snippetId'
 , dm.param( 'snippetId' )
 , dm.findOne( db.snippets )
 );
 
-app.put( '/snippets/:snippetId'
+app.put( '/api/snippets/:snippetId'
 , dm.param( 'snippetId' )
 , dm.update( db.snippets )
 );
 
-app.del( '/snippets/:snippetId'
+app.del( '/api/snippets/:snippetId'
 , dm.param( 'snippetId' )
 , dm.remove( db.snippets )
 );
