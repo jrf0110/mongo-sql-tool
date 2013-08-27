@@ -5,6 +5,11 @@ require.config({
     , "location": "jam/ace/lib/ace"
     , "main": "ace"
     }
+  , {
+      "name": "signals"
+    , "location": "jam/js-signals"
+    , "main": "signals.js"
+    }
   ]
 });
 
@@ -23,6 +28,25 @@ define(function(require){
 
   , app = {
       events: {}
+
+    , routes: {
+        'snippets/:snippetId':
+        function( snippetId ){
+          utils.http({
+            url:      '/api/snippets/' + snippetId
+          , method:   'get'
+          , type:     'json'
+          , success:  function( result ){
+              if ( result.error ) return result.error( error );
+console.log(result)
+              app.mainEditor.setValue( result.data.content );
+              app.parseResult();
+              app.formatResult();
+            }
+          , error:    app.error
+          });
+        }
+      }
 
     , init: function(){
         cssParser.parse( config.styleId );
@@ -56,11 +80,17 @@ define(function(require){
           app.loadInitial();
 
           app.initEvents();
+          app.initRoutes();
         });
       }
 
     , loadInitial: function(){
         app.mainEditor.setValue( initial );
+      }
+
+    , initRoutes: function(){
+        app.router = new utils.Router( app.routes );
+        app.router.listen();
       }
 
     , initEvents: function(){
@@ -81,6 +111,7 @@ define(function(require){
       }
 
     , parseResult: function(){
+        if ( app.mainEditor.getValue() == '' ) return;
         app.resultEditor.setValue(
           utils.sql( eval( '(' + app.mainEditor.getValue() + ')' ) ).toString()
         );
@@ -101,8 +132,6 @@ define(function(require){
         editor.getSession().setUseSoftTabs( true );
         editor.getSession().setUseWrapMode( false );
       }
-
-    , onMainEditorKeyUp: function(e){ console.log("keyup", e); }
     }
   ;
 

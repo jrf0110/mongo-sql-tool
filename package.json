@@ -19,7 +19,8 @@
       "domReady": "2.0.x",
       "mongo-sql": "2.1.x",
       "ace": "1.0.x",
-      "reqwest": "0.8.x"
+      "reqwest": "0.8.x",
+      "paper-boy": "0.1.x"
     }
   }
 }

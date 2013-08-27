@@ -43,18 +43,18 @@ app.post( '/api/snippets'
 , dm.insert( db.snippets )
 );
 
-app.get( '/api/snippets/:snippetId'
-, dm.param( 'snippetId' )
+app.get( '/api/snippets/:id'
+, dm.param( 'id' )
 , dm.findOne( db.snippets )
 );
 
-app.put( '/api/snippets/:snippetId'
-, dm.param( 'snippetId' )
+app.put( '/api/snippets/:id'
+, dm.param( 'id' )
 , dm.update( db.snippets )
 );
 
-app.del( '/api/snippets/:snippetId'
-, dm.param( 'snippetId' )
+app.del( '/api/snippets/:id'
+, dm.param( 'id' )
 , dm.remove( db.snippets )
 );
 
