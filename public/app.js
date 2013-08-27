@@ -38,7 +38,7 @@ define(function(require){
           , type:     'json'
           , success:  function( result ){
               if ( result.error ) return result.error( error );
-console.log(result)
+
               app.mainEditor.setValue( result.data.content );
               app.parseResult();
               app.formatResult();
