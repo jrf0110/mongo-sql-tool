@@ -5,11 +5,6 @@ require.config({
     , "location": "jam/ace/lib/ace"
     , "main": "ace"
     }
-  , {
-      "name": "signals"
-    , "location": "jam/js-signals"
-    , "main": "signals.js"
-    }
   ]
 });
 
@@ -30,22 +25,19 @@ define(function(require){
       events: {}
 
     , routes: {
-        'snippets/:snippetId':
-        function( snippetId ){
-          utils.http({
-            url:      '/api/snippets/' + snippetId
-          , method:   'get'
-          , type:     'json'
-          , success:  function( result ){
-              if ( result.error ) return result.error( error );
-
-              app.mainEditor.setValue( result.data.content );
-              app.parseResult();
-              app.formatResult();
-            }
-          , error:    app.error
-          });
+        '':
+        function(){
+          app.loadSnippet( config.defaultSnippet );
         }
+      , 'snippets/:snippetId':
+        function( snippetId ){
+          app.loadSnippet( snippetId );
+        }
+      }
+
+    , model: {
+        name:     ""
+      , content:  ""
       }
 
     , init: function(){
@@ -77,6 +69,8 @@ define(function(require){
             'command-alt-f': app.formatResult
           });
 
+          app.mainEditor.on( 'change', app.updateModel );
+
           app.loadInitial();
 
           app.initEvents();
@@ -106,6 +100,10 @@ define(function(require){
         }
       }
 
+    , updateModel: function(){
+        app.model.content = app.mainEditor.getValue();
+      }
+
     , error: function(error){
         return alert( JSON.stringify(error) );
       }
@@ -131,6 +129,41 @@ define(function(require){
         editor.getSession().setTabSize( 2 );
         editor.getSession().setUseSoftTabs( true );
         editor.getSession().setUseWrapMode( false );
+      }
+
+    , saveSnippet: function( callback ){
+        utils.http({
+          url:      '/api/snippets' + ( app.model.id ? ('/' + app.model.id) : '' )
+        , method:   app.model.id ? 'PUT' : 'POST'
+        , type:     'json'
+        , data:     app.model
+        , error:    callback ? callback : app.error
+
+        , success: function( result ){
+            callback( result.error, result.data );
+          }
+        }); 
+      }
+
+    , loadSnippet: function( snippetId, callback ){
+        utils.http({
+          url:      '/api/snippets/' + snippetId
+        , method:   'get'
+        , type:     'json'
+        , error:    callback ? callback : app.error
+
+        , success:   function( result ){
+            if ( result.error ) return callback ? callback( result.error ) : app.error( result.error );
+
+            app.model = result.data;
+
+            app.mainEditor.setValue( app.model.content );
+            app.parseResult();
+            app.formatResult();
+
+            if ( callback ) callback( null, app.model );
+          }
+        });
       }
     }
   ;

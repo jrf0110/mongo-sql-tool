@@ -4,5 +4,6 @@ define(function(require){
   , resultId:         'result'
   , styleId:          'app-style'
   , sqlFormatterUrl:  'http://sqlformat.org/api/v1/format'
+  , defaultSnippet:   1
   };
 });

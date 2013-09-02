@@ -7,8 +7,8 @@ var
   express = require('express')
 , http    = require('http')
 , path    = require('path')
-, dm      = require('dirac-middleware')
 , app     = express()
+, m       = require('./lib/middleware')
 , db      = require('./lib/db')
 , config  = require('./config')
 ;
@@ -22,7 +22,7 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(express.cookieParser( config.cookieSecret ));
   app.use(express.cookieSession());
-  app.use(dm.queryObj());
+  app.use(m.queryObj());
   app.use(app.router);
 });
 
@@ -34,28 +34,30 @@ app.configure('development', function(){
 });
 
 app.get( '/api/snippets'
-, dm.pagination( 30 )
-, dm.sort( '-id' )
-, dm.find( db.snippets )
+, m.pagination( 30 )
+, m.sort( '-id' )
+, m.find( db.snippets )
 );
 
 app.post( '/api/snippets'
-, dm.insert( db.snippets )
+, m.insert( db.snippets )
 );
 
 app.get( '/api/snippets/:id'
-, dm.param( 'id' )
-, dm.findOne( db.snippets )
+, m.param( 'id' )
+, m.findOne( db.snippets )
 );
 
 app.put( '/api/snippets/:id'
-, dm.param( 'id' )
-, dm.update( db.snippets )
+, m.snippetOwner( 'id' )
+, m.param( 'id' )
+, m.update( db.snippets )
 );
 
 app.del( '/api/snippets/:id'
-, dm.param( 'id' )
-, dm.remove( db.snippets )
+, m.snippetOwner( 'id' )
+, m.param( 'id' )
+, m.remove( db.snippets )
 );
 
 http.createServer(app).listen(app.get('port'), function(){

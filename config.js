@@ -33,6 +33,24 @@ config.default = {
 , db: {
     database: 'mongo_sql_tool'
   }
+
+, github: {
+    // Url for github oauth
+    oauthUrl:       'https://github.com/login/oauth/authorize'
+
+    // URL to exchange code for access token
+  , accessTokenUrl: 'https://github.com/login/oauth/access_token'
+
+    // URL to get user profile and ensure user is correct user
+  , userProfileUrl: 'https://api.github.com/user'
+
+    // What we need from the user
+  , scopes:         ['user']
+
+    // The goods
+  , clientId:       process.env['MOSQL_TOOL_GITHUB_CLIENT_ID']
+  , clientSecret:   process.env['MOSQL_TOOL_GITHUB_CLIENT_SECRET']
+  }
 };
 
 /**
