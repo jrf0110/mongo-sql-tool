@@ -11,6 +11,6 @@
 
   location ~ ^/(.+)$ {
     # root /apps/mongo-sql-tool/public;
-    proxy_pass http://127.0.0.1:3006;
+    proxy_pass http://127.0.0.1:3200;
   }
 }
