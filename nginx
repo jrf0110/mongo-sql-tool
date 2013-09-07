@@ -3,7 +3,7 @@
   listen 80;
 
   root /apps/mongo-sql-tool/public;
-  index index.html index.htm;
+  index index-built.html index.html index.htm;
 
   location ~ ^/(.*\..*)$ {
     alias /apps/mongo-sql-tool/public/$1;
