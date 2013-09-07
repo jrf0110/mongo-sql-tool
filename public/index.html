@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>MongoSQL Tool</title>
+    <title>MoSQL Tool</title>
 
     <style id="app-style">
       /*
@@ -11,7 +11,7 @@
         
         @base-font-family:        Helvetica Neue, Helvetica, sans-serif;
         @base-color:              #333;
-        @base-gutter:             24px;
+        @base-gutter:             20px;
         @app-header-height:       40px;
 
         @z-index-app-header:      100;
@@ -57,7 +57,7 @@
 
       .app-logo {
         display: inline-block;
-        margin-top: 7px;
+        margin-top: 8px;
         font-size: 20px;
         text-shadow: 0 1px 0 #FCF5F5;
         color: #442B2B;
@@ -88,6 +88,86 @@
       .editor-pane > .code-editor {
         border-right: solid 1px #ccc;
       }
+
+      .header-right {
+        float: right;
+        height: @app-header-height;
+        text-align: right;
+        font-size: 0;
+      }
+
+      .header-right:after {
+        content: "";
+        display: inline-block;
+        vertical-align: middle;
+        height: @app-header-height;
+      }
+
+      .header-nav {
+        display: inline-block;
+        vertical-align: middle;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .header-nav > li {
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      .header-nav > li > a {
+        display: inline-block;
+        margin: 0 8px;
+        font-size: 14px;
+        color: #555;
+        text-decoration: none;
+        text-shadow: 0 1px #FFF;
+      }
+
+      .header-nav > li > a:hover {
+        text-decoration: underline;
+      }
+
+      .header-nav .btn {
+        box-shadow: 0 1px 0 #F2F2F2;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 5px 14px;
+        border-radius: 2px;
+        font-size: 13px;
+        cursor: pointer;
+        background: #eee;
+        border: solid 1px #BBB;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+        color: #555;
+      }
+
+      .btn:hover {
+        background: #e5e5e5;
+      }
+
+      a.btn:hover {
+        text-decoration: none !important;
+      }
+
+      .btn.btn-green {
+        background: #7BC95D;
+        border: solid 1px #74976B;
+        color: #FDFFF5;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.4);
+      }
+
+      .btn.btn-green:hover {
+        background: #7BD459;
+      }
+
+      .hide {
+        display: none !important;
+      }
+
     </style>
 
     <script src="jam/require.js"></script>
@@ -101,7 +181,23 @@
     <div class="app-container">
 
       <div class="app-header">
-        <span class="app-logo">MongoSQL</span>
+        <span class="app-logo">MoSQL</span>
+        <div class="header-right">
+          <ul class="header-nav">
+            <li class="app-state-loggedIn hide">
+              <a href="/#/logout">Logout</a>
+            </li>
+            <li class="app-state-notLoggedIn">
+              <a class="btn btn-login" href="/#/login">Login with Github</a>
+            </li>
+            <li class="app-state-loggedIn hide">
+              <button class="btn btn-new">New</button>
+            </li>
+            <li class="app-state-loggedIn hide">
+              <button class="btn btn-green btn-save">Save</button>
+            </li>
+          </ul>
+        </div>
       </div>
 
       <div class="editor-pane">

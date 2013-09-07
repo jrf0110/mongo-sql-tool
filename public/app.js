@@ -12,9 +12,12 @@ define(function(require){
   var
     ace           = require('ace')
   , utils         = require('./lib/utils')
+  , notify        = require('./lib/notify')
   , initial       = require('./lib/initial')
   , config        = require('./config')
   , cssParser     = require('./lib/css-parser')
+  , user          = require('./lib/user')
+  , snippet       = require('./lib/snippet')
 
   , Modes = {
       JavaScript:   require('ace/mode/javascript').Mode
@@ -22,10 +25,51 @@ define(function(require){
     }
 
   , app = {
-      events: {}
+      events: {
+        'click .btn-new':   'onBtnNewClick'
+      , 'click .btn-save':  'onBtnSaveClick'
+      }
+
+    , keybindings: {
+        'command-enter':  'parseResult'
+      , 'command-alt-f':  'formatResult'
+      , 'ctrl-n':         'newSnippet'
+      , 'ctrl-s':         'onBtnSaveClick'
+      }
+
+    , routes: {
+        '':
+        function(){
+          app.loadSnippet( config.defaultSnippet );
+        }
+      , 'snippets/:snippetId':
+        function( snippetId ){
+          app.loadSnippet( snippetId );
+        }
+      , 'errors/:msg':
+        function( msg ){
+          app.error( msg );
+        }
+      , 'login':
+        function(){
+          user.auth();
+        }
+      , 'logout':
+        function(){
+          user.session.del();
+          app.onUserLogout();
+          app.router.navigate( config.defaultSnippet );
+        }
+      }
 
     , init: function(){
         cssParser.parse( config.styleId );
+
+        user.fetch( function( error, result ){
+          if ( error ) return app.error( error );
+
+          if ( result ) app.onUserLogin( result );
+        });
 
         utils.domready(function(){
           app.mainEditor    = ace.edit( config.editorId );
@@ -37,30 +81,29 @@ define(function(require){
           app.mainEditor.getSession().setMode( new Modes.JavaScript() );
           app.resultEditor.getSession().setMode( new Modes.SQL() );
 
-          app.mainEditor.commands.bindKeys({
-            'command-enter': app.parseResult
-          });
+          for ( var key in app.keybindings ){
+            app.keybindings[ key ] = app[ app.keybindings[ key ] ];
+          }
 
-          app.resultEditor.commands.bindKeys({
-            'command-enter': app.parseResult
-          });
+          app.mainEditor.commands.bindKeys( app.keybindings );
+          app.resultEditor.commands.bindKeys( app.keybindings );
 
-          app.mainEditor.commands.bindKeys({
-            'command-alt-f': app.formatResult
-          });
-
-          app.resultEditor.commands.bindKeys({
-            'command-alt-f': app.formatResult
-          });
+          app.mainEditor.on( 'change', app.updateModel );
 
           app.loadInitial();
 
           app.initEvents();
+          app.initRoutes();
         });
       }
 
     , loadInitial: function(){
         app.mainEditor.setValue( initial );
+      }
+
+    , initRoutes: function(){
+        app.router = new utils.Router( app.routes );
+        app.router.listen();
       }
 
     , initEvents: function(){
@@ -69,18 +112,21 @@ define(function(require){
             document.querySelectorAll( key.substring( i = (key.indexOf(' ') + 1) ) )
           ).forEach( function(el){
             el.addEventListener(
-              key.substring( 0, i )
+              key.substring( 0, i - 1 )
             , app[ app.events[ key ] ]
             );
           });
         }
       }
 
-    , error: function(error){
-        return alert( JSON.stringify(error) );
+    , updateModel: function(){
+        snippet.set({ content: app.mainEditor.getValue() });
       }
 
+    , error: notify.error
+
     , parseResult: function(){
+        if ( app.mainEditor.getValue() == '' ) return;
         app.resultEditor.setValue(
           utils.sql( eval( '(' + app.mainEditor.getValue() + ')' ) ).toString()
         );
@@ -102,7 +148,60 @@ define(function(require){
         editor.getSession().setUseWrapMode( false );
       }
 
-    , onMainEditorKeyUp: function(e){ console.log("keyup", e); }
+    , clearEditors: function(){
+        app.mainEditor.setValue( "" );
+        app.resultEditor.setValue( "" );
+      }
+
+    , saveSnippet: function( callback ){
+        snippet.save( callback );
+      }
+
+    , newSnippet: function( callback ){
+        snippet.fresh( function( error ){
+          if ( error ) return callback ? callback( error ) : app.error( error );
+
+          app.router.navigate( '/snippets/' + snippet.attr.id, true );
+          app.clearEditors();
+          if ( callback ) callback();
+        });
+      }
+
+    , loadSnippet: function( snippetId, callback ){
+        snippet.attr.id = snippetId;
+        snippet.fetch( function( error ){
+          app.mainEditor.setValue( snippet.attr.content );
+          app.parseResult();
+          app.formatResult();
+
+          if ( callback ) callback( null, snippet );
+        });
+      }
+
+    , onUserLogin: function( user ){
+        utils.dom('.app-state-notLoggedIn').addClass('hide');
+        utils.dom('.app-state-loggedIn').removeClass('hide');
+      }
+
+    , onUserLogout: function( user ){
+        utils.dom('.app-state-notLoggedIn').removeClass('hide');
+        utils.dom('.app-state-loggedIn').addClass('hide');
+      }
+
+    , onBtnNewClick: function( e ){
+        app.newSnippet();
+      }
+
+    , onBtnSaveClick: function( e ){
+        var $target = utils.dom( this instanceof Element ? this : '.btn-save'  );
+        app.saveSnippet( function( error ){
+          if ( error ) return notify.error( error );
+          $target.text( 'Saved!' );
+
+          setTimeout(function(){ $target.text( 'Save' ); }, 3000);
+        });
+
+      }
     }
   ;
 
