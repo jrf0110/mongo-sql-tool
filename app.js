@@ -9,6 +9,7 @@ var
 , path    = require('path')
 , app     = express()
 , m       = require('./lib/middleware')
+, routes  = require('./routes')
 , db      = require('./lib/db')
 , config  = require('./config')
 ;
@@ -22,7 +23,8 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(express.cookieParser( config.cookieSecret ));
   app.use(express.cookieSession());
-  app.use(m.queryObj());
+  app.use(m.error());
+  app.use(m.dirac());
   app.use(app.router);
 });
 
@@ -33,13 +35,29 @@ app.configure('development', function(){
   app.use(express.static(path.join(__dirname, 'public')));
 });
 
+app.get( '/oauth/redirect'
+, routes.oauth.redirect
+);
+
+app.get( '/oauth'
+, routes.oauth.auth
+);
+
+app.get( '/api/session'
+, routes.session.get
+);
+
+app.del( '/api/session'
+, routes.session.del
+);
+
 app.get( '/api/snippets'
 , m.pagination( 30 )
 , m.sort( '-id' )
 , m.find( db.snippets )
 );
 
-app.post( '/api/snippets'
+app.post('/api/snippets'
 , m.insert( db.snippets )
 );
 

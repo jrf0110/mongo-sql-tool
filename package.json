@@ -11,7 +11,8 @@
     "async": "~0.2.9",
     "dirac": "0.x.x",
     "dirac-middleware": "0.x.x",
-    "stdm": "0.x.x"
+    "stdm": "0.x.x",
+    "request": "~2.27.0"
   },
   "jam": {
     "packageDir": "public/jam",
@@ -21,7 +22,8 @@
       "mongo-sql": "2.1.x",
       "ace": "1.0.x",
       "reqwest": "0.8.x",
-      "paper-boy": "0.1.x"
+      "paper-boy": "0.1.x",
+      "jquery": "2.0.x"
     }
   }
 }

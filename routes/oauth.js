@@ -1,25 +1,32 @@
 var
-  config  = require('../lib/config')
+  config  = require('../config')
 , utils   = require('../lib/utils')
 , errors  = require('../lib/errors')
 ;
 
-module.exports.get = function(req, res){
-  res.json({
-    url: config.github.oauthUrl
-      + '?client_id='
-      + config.github.clientId
-      + '&scope='
-      + config.github.scopes.join(',')
-  });
+module.exports.redirect = function(req, res){
+  res.redirect(
+    config.github.oauthUrl
+  + '?client_id='
+  + config.github.clientId
+  + '&scope='
+  + config.github.scopes.join(',')
+  + '&redirect_uri='
+  + config.github.redirectUri
+  + ( req.param('snippet') ?
+    ('?snippet=' + req.param('snippet')) : '' )
+  );
 };
 
 module.exports.auth = function(req, res){
-  if (req.session && req.session.user) return res.status(204).end();
+  var doneUrl = req.param('snippet') ? ('/#/snippets/' + req.param('snippet')) : '/';
+  if ( req.session && req.session.user ){
+    return res.redirect( doneUrl );
+  }
 
   var options = {
     url: config.github.accessTokenUrl + utils.queryParams({
-      code:           req.body.code
+      code:           req.param('code')
     , client_id:      config.github.clientId
     , client_secret:  config.github.clientSecret
     })
@@ -33,12 +40,13 @@ module.exports.auth = function(req, res){
     }
   };
 
+  // Get access token
   utils.http(options, function(error, response, body){
     if (error)
-      return res.error(errors.auth.UNKNOWN_OAUTH);
+      return res.redirect('/#/error/' + errors.auth.UNKNOWN_OAUTH.message);
 
     if (!body.access_token)
-      return res.error(errors.auth.UNKNOWN_OAUTH);
+      return res.redirect('/#/error/' + errors.auth.UNKNOWN_OAUTH.message);
 
     var url = config.github.userProfileUrl + '?access_token=' + body.access_token;
     var accessToken = body.access_token;
@@ -49,28 +57,15 @@ module.exports.auth = function(req, res){
 
     // Get user profile
     utils.http(options, function(error, response, body){
-      if (error) return res.error(errors.auth.INVALID_ACCESS_TOKEN);
+      if (error)
+        return res.redirect('/#/error/' + errors.auth.INVALID_ACCESS_TOKEN.message);
 
       body = JSON.parse(body);
 
-      if (!body.organizations_url) res.error(errors.auth.INVALID_ACCESS_TOKEN);
+      req.session.user = body;
+      req.session.user.accessToken = accessToken;
 
-      options.url = body.organizations_url;
-
-      utils.http(options, function(error, response, body){
-        if (error) return res.error(errors.auth.INVALID_ACCESS_TOKEN);
-
-        try {
-          body = JSON.parse(body);
-        } catch( e ){
-          return res.error(errors.auth.UNKNOWN_OAUTH);
-        }
-        
-        req.session.user = body;
-        req.session.user.accessToken = accessToken;
-
-        res.json(body);
-      });
+      res.redirect( doneUrl );
     });
   });
 };

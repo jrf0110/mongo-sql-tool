@@ -4,10 +4,12 @@ define(function(require){
   , http        = require('reqwest')
   , mosql       = require('mongo-sql')
   , PaperBoy    = require('paper-boy')
+  , dom         = require('jquery')
   , formatter   = require('./sql-formatter')
   , utils       = {}
   ;
 
+  utils.dom       = dom;
   utils.sql       = mosql.sql;
   utils.domready  = domready;
   utils.http      = http;

@@ -47,6 +47,8 @@ config.default = {
     // What we need from the user
   , scopes:         ['user']
 
+  , redirectUri:    'http://localhost:3000/oauth'
+
     // The goods
   , clientId:       process.env['MOSQL_TOOL_GITHUB_CLIENT_ID']
   , clientSecret:   process.env['MOSQL_TOOL_GITHUB_CLIENT_SECRET']

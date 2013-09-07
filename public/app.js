@@ -12,9 +12,12 @@ define(function(require){
   var
     ace           = require('ace')
   , utils         = require('./lib/utils')
+  , notify        = require('./lib/notify')
   , initial       = require('./lib/initial')
   , config        = require('./config')
   , cssParser     = require('./lib/css-parser')
+  , user          = require('./lib/user')
+  , snippet       = require('./lib/snippet')
 
   , Modes = {
       JavaScript:   require('ace/mode/javascript').Mode
@@ -22,7 +25,17 @@ define(function(require){
     }
 
   , app = {
-      events: {}
+      events: {
+        'click .btn-new':   'onBtnNewClick'
+      , 'click .btn-save':  'onBtnSaveClick'
+      }
+
+    , keybindings: {
+        'command-enter':  'parseResult'
+      , 'command-alt-f':  'formatResult'
+      , 'ctrl-n':         'newSnippet'
+      , 'ctrl-s':         'onBtnSaveClick'
+      }
 
     , routes: {
         '':
@@ -33,15 +46,30 @@ define(function(require){
         function( snippetId ){
           app.loadSnippet( snippetId );
         }
-      }
-
-    , model: {
-        name:     ""
-      , content:  ""
+      , 'errors/:msg':
+        function( msg ){
+          app.error( msg );
+        }
+      , 'login':
+        function(){
+          user.auth();
+        }
+      , 'logout':
+        function(){
+          user.session.del();
+          app.onUserLogout();
+          app.router.navigate( config.defaultSnippet );
+        }
       }
 
     , init: function(){
         cssParser.parse( config.styleId );
+
+        user.fetch( function( error, result ){
+          if ( error ) return app.error( error );
+
+          if ( result ) app.onUserLogin( result );
+        });
 
         utils.domready(function(){
           app.mainEditor    = ace.edit( config.editorId );
@@ -53,21 +81,12 @@ define(function(require){
           app.mainEditor.getSession().setMode( new Modes.JavaScript() );
           app.resultEditor.getSession().setMode( new Modes.SQL() );
 
-          app.mainEditor.commands.bindKeys({
-            'command-enter': app.parseResult
-          });
+          for ( var key in app.keybindings ){
+            app.keybindings[ key ] = app[ app.keybindings[ key ] ];
+          }
 
-          app.resultEditor.commands.bindKeys({
-            'command-enter': app.parseResult
-          });
-
-          app.mainEditor.commands.bindKeys({
-            'command-alt-f': app.formatResult
-          });
-
-          app.resultEditor.commands.bindKeys({
-            'command-alt-f': app.formatResult
-          });
+          app.mainEditor.commands.bindKeys( app.keybindings );
+          app.resultEditor.commands.bindKeys( app.keybindings );
 
           app.mainEditor.on( 'change', app.updateModel );
 
@@ -93,7 +112,7 @@ define(function(require){
             document.querySelectorAll( key.substring( i = (key.indexOf(' ') + 1) ) )
           ).forEach( function(el){
             el.addEventListener(
-              key.substring( 0, i )
+              key.substring( 0, i - 1 )
             , app[ app.events[ key ] ]
             );
           });
@@ -101,12 +120,10 @@ define(function(require){
       }
 
     , updateModel: function(){
-        app.model.content = app.mainEditor.getValue();
+        snippet.set({ content: app.mainEditor.getValue() });
       }
 
-    , error: function(error){
-        return alert( JSON.stringify(error) );
-      }
+    , error: notify.error
 
     , parseResult: function(){
         if ( app.mainEditor.getValue() == '' ) return;
@@ -131,39 +148,59 @@ define(function(require){
         editor.getSession().setUseWrapMode( false );
       }
 
-    , saveSnippet: function( callback ){
-        utils.http({
-          url:      '/api/snippets' + ( app.model.id ? ('/' + app.model.id) : '' )
-        , method:   app.model.id ? 'PUT' : 'POST'
-        , type:     'json'
-        , data:     app.model
-        , error:    callback ? callback : app.error
+    , clearEditors: function(){
+        app.mainEditor.setValue( "" );
+        app.resultEditor.setValue( "" );
+      }
 
-        , success: function( result ){
-            callback( result.error, result.data );
-          }
-        }); 
+    , saveSnippet: function( callback ){
+        snippet.save( callback );
+      }
+
+    , newSnippet: function( callback ){
+        snippet.fresh( function( error ){
+          if ( error ) return callback ? callback( error ) : app.error( error );
+
+          app.router.navigate( '/snippets/' + snippet.attr.id, true );
+          app.clearEditors();
+          if ( callback ) callback();
+        });
       }
 
     , loadSnippet: function( snippetId, callback ){
-        utils.http({
-          url:      '/api/snippets/' + snippetId
-        , method:   'get'
-        , type:     'json'
-        , error:    callback ? callback : app.error
+        snippet.attr.id = snippetId;
+        snippet.fetch( function( error ){
+          app.mainEditor.setValue( snippet.attr.content );
+          app.parseResult();
+          app.formatResult();
 
-        , success:   function( result ){
-            if ( result.error ) return callback ? callback( result.error ) : app.error( result.error );
-
-            app.model = result.data;
-
-            app.mainEditor.setValue( app.model.content );
-            app.parseResult();
-            app.formatResult();
-
-            if ( callback ) callback( null, app.model );
-          }
+          if ( callback ) callback( null, snippet );
         });
+      }
+
+    , onUserLogin: function( user ){
+        utils.dom('.app-state-notLoggedIn').addClass('hide');
+        utils.dom('.app-state-loggedIn').removeClass('hide');
+      }
+
+    , onUserLogout: function( user ){
+        utils.dom('.app-state-notLoggedIn').removeClass('hide');
+        utils.dom('.app-state-loggedIn').addClass('hide');
+      }
+
+    , onBtnNewClick: function( e ){
+        app.newSnippet();
+      }
+
+    , onBtnSaveClick: function( e ){
+        var $target = utils.dom( this instanceof Element ? this : '.btn-save'  );
+        app.saveSnippet( function( error ){
+          if ( error ) return notify.error( error );
+          $target.text( 'Saved!' );
+
+          setTimeout(function(){ $target.text( 'Save' ); }, 3000);
+        });
+
       }
     }
   ;

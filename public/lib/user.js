@@ -1,6 +1,8 @@
 define(function(require){
   var utils = require('./utils');
-  var user = {};
+  var notify = require('./notify');
+  var snippet = require('./snippet');
+  var user = { attr: {} };
 
   user.session = {};
   user.session.get = function( callback ){
@@ -9,9 +11,11 @@ define(function(require){
     , method: 'get'
     , type: 'json'
     , success: function( result ){
-        callback( result.error, result.data );
+        user.attr = result.data.user;
+        if ( result.error ) return ( callback || notify.error )( result.error )
+        callback( result.error, user.attr );
       }
-    , error: callback
+    , error: callback || notify.error
     });
   };
 
@@ -21,11 +25,18 @@ define(function(require){
     , method: 'delete'
     , type: 'json'
     , success: function( result ){
-        callback( result ? result.error || null );
+        return ( callback || notify.error )( result.error )
+        if ( callback ) callback();
       }
-    , error: callback
+    , error: callback || notify.error
     });
   };
+
+  user.auth = function(){
+    window.location.href = "/oauth/redirect" + ( snippet.attr.id ? ('?snippet=' + snippet.attr.id) : '');
+  };
+
+  user.fetch = user.session.get;
 
   return user;
 });
