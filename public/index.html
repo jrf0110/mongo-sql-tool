@@ -77,6 +77,15 @@
         margin-top: @app-header-height;
       }
 
+      .app-container.no-header .app-header {
+        display: none;
+      }
+
+      .app-container.no-header .editor-pane,
+      .app-container.no-header .result-pane {
+        margin-top: 0;
+      }
+
       .code-editor {
         -webkit-box-sizing: border-box;
         -moz-box-sizing: border-box;

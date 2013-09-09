@@ -46,6 +46,15 @@ define(function(require){
         function( snippetId ){
           app.loadSnippet( snippetId );
         }
+      , 'no-header-snippets/:snippetId': {
+          enter: function( snippetId ){
+            utils.dom( '.app-container' ).addClass( 'no-header' );
+            app.loadSnippet( snippetId );
+          }
+        , exit: function( snippetId ){
+            utils.dom( '.app-container' ).removeClass( 'no-header' );
+          }
+        }
       , 'errors/:msg':
         function( msg ){
           app.error( msg );
