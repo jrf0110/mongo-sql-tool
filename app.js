@@ -58,6 +58,7 @@ app.get( '/api/snippets'
 );
 
 app.post('/api/snippets'
+, m.snippetOwnerReqBody()
 , m.insert( db.snippets )
 );
 
@@ -68,6 +69,7 @@ app.get( '/api/snippets/:id'
 
 app.put( '/api/snippets/:id'
 , m.snippetOwner( 'id' )
+, m.snippetOwnerReqBody()
 , m.param( 'id' )
 , m.update( db.snippets )
 );
