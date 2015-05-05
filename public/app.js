@@ -103,6 +103,7 @@ define(function(require){
 
           app.initEvents();
           app.initRoutes();
+          app.registerUnload();
         });
       }
 
@@ -126,6 +127,12 @@ define(function(require){
             );
           });
         }
+      }
+
+    , registerUnload: function(){
+        window.onbeforeunload = function beforeunload(){
+          return '(╯°□°）╯︵ ┻━┻';
+        };
       }
 
     , updateModel: function(){
