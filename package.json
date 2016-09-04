@@ -3,27 +3,25 @@
   "version": "0.0.4",
   "private": true,
   "scripts": {
-    "start": "node app"
+    "start": "node app",
+    "build": "mkdir -p public/dist && browserify -d public/app.js > public/dist/app.js"
   },
   "dependencies": {
-    "express": "3.x.x",
-    "lodash": "~1.3.1",
     "async": "~0.2.9",
+    "brace": "^0.8.0",
     "dirac": "0.x.x",
     "dirac-middleware": "0.x.x",
-    "stdm": "0.x.x",
-    "request": "~2.27.0"
+    "express": "3.x.x",
+    "jquery": "2.2.3",
+    "lodash": "~1.3.1",
+    "mongo-sql": "*",
+    "paper-boy": "^0.1.5",
+    "pg-native": "^1.10.0",
+    "request": "~2.27.0",
+    "reqwest": "0.8.x",
+    "stdm": "0.x.x"
   },
-  "jam": {
-    "packageDir": "public/jam",
-    "baseUrl": "public",
-    "dependencies": {
-      "domReady": "2.0.x",
-      "mongo-sql": "2.1.x",
-      "ace": "1.0.x",
-      "reqwest": "0.8.x",
-      "paper-boy": "0.1.x",
-      "jquery": "2.0.x"
-    }
+  "devDependencies": {
+    "browserify": "^13.1.0"
   }
 }

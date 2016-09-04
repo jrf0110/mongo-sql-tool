@@ -2,3 +2,4 @@
 node_modules/
 public/jam/
 public/index-built.html
+public/dist/
