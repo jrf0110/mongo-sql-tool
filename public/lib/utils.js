@@ -1,7 +1,12 @@
+if (typeof module === 'object' && typeof define !== 'function') {
+  var define = function (factory) {
+    module.exports = factory(require, exports, module);
+  };
+}
+
 define(function(require){
   var
-    domready    = require('domReady')
-  , http        = require('reqwest')
+    http        = require('reqwest')
   , mosql       = require('mongo-sql')
   , PaperBoy    = require('paper-boy')
   , dom         = require('jquery')
@@ -10,8 +15,8 @@ define(function(require){
   ;
 
   utils.dom       = dom;
+  utils.domready  = dom;
   utils.sql       = mosql.sql;
-  utils.domready  = domready;
   utils.http      = http;
   utils.formatSql = formatter.format;
   utils.Router    = PaperBoy;

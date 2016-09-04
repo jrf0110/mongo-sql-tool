@@ -1,16 +1,13 @@
-require.config({
-  "packages": [
-    {
-      "name": "ace"
-    , "location": "jam/ace/lib/ace"
-    , "main": "ace"
-    }
-  ]
-});
+if (typeof module === 'object' && typeof define !== 'function') {
+  var define = function (factory) {
+    module.exports = factory(require, exports, module);
+  };
+}
 
 define(function(require){
+
   var
-    ace           = require('ace')
+    ace           = require('brace')
   , utils         = require('./lib/utils')
   , notify        = require('./lib/notify')
   , initial       = require('./lib/initial')
@@ -18,11 +15,9 @@ define(function(require){
   , cssParser     = require('./lib/css-parser')
   , user          = require('./lib/user')
   , snippet       = require('./lib/snippet')
-
-  , Modes = {
-      JavaScript:   require('ace/mode/javascript').Mode
-    , SQL:          require('ace/mode/sql').Mode
-    }
+  , ModeJS        = require('brace/mode/javascript')
+  , ModeSQL       = require('brace/mode/sql')
+  , theme         = require('brace/theme/github')
 
   , app = {
       events: {
@@ -87,8 +82,10 @@ define(function(require){
           app.makeEditorStandard( app.mainEditor );
           app.makeEditorStandard( app.resultEditor );
 
-          app.mainEditor.getSession().setMode( new Modes.JavaScript() );
-          app.resultEditor.getSession().setMode( new Modes.SQL() );
+          app.mainEditor.getSession().setMode('ace/mode/javascript');
+          app.mainEditor.session.setOption('useWorker', false)
+          app.resultEditor.getSession().setMode('ace/mode/sql');
+          app.resultEditor.session.setOption('useWorker', false)
 
           for ( var key in app.keybindings ){
             app.keybindings[ key ] = app[ app.keybindings[ key ] ];
@@ -105,6 +102,8 @@ define(function(require){
           app.initRoutes();
           app.registerUnload();
         });
+
+        return app;
       }
 
     , loadInitial: function(){
@@ -157,7 +156,7 @@ define(function(require){
       }
 
     , makeEditorStandard: function(editor){
-        editor.setTheme( 'ace/theme/github' );
+        editor.setTheme('ace/theme/github');
         editor.setShowPrintMargin( false );
         editor.getSession().setTabSize( 2 );
         editor.getSession().setUseSoftTabs( true );
@@ -221,5 +220,5 @@ define(function(require){
     }
   ;
 
-  return app;
+  return global.app = app.init();
 });
